@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the application code to the container
-COPY www/ /var/www/html/
+# COPY www/ /var/www/html/
 
 # Copy the custom Apache config
 COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
