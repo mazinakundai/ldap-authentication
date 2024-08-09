@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  php-apache:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - ./www:/var/www/html
+    environment:
+      - LDAP_HOST=ldap
+      - LDAP_DN=${LDAP_DN}
+      - LDAP_USER=${LDAP_USER}
+      - LDAP_PASSWORD=${LDAP_PASSWORD}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    depends_on:
+      - ldap
+      - mysql
+    networks:
+      - bridge_network
+
+  ldap:
+    image: osixia/openldap:1.5.0
+    container_name: ldap-server
+    environment:
+      LDAP_ORGANISATION: "Example Inc."
+      LDAP_DOMAIN: "example.org"
+      LDAP_ADMIN_PASSWORD: "admin"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ldap-data:/var/lib/ldap
+      - ldap-config:/etc/ldap/slapd.d
+      - ./www/users.ldif:/container/service/slapd/assets/config/bootstrap/ldif/50-bootstrap.ldif
+    networks:
+      - bridge_network
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    container_name: phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+    ports:
+      - "8000:80"
+    depends_on:
+      - ldap
+    networks:
+      - bridge_network
+      
+  mysql:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - bridge_network
+
+volumes:
+  ldap-data:
+  ldap-config:
+  mysql-data:
+
+networks:
+  bridge_network:
+    driver: bridge

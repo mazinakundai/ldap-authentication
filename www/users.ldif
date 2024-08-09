@@ -1,0 +1,6 @@
+# Add your LDIF content here
+dn: ou=Acme Corp,dc=example,dc=org
+objectClass: organizationalUnit
+ou: Acme Corp
+
+# Repeat for other users...
